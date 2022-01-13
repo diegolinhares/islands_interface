@@ -22,8 +22,12 @@ defmodule IslandsInterfaceWeb.GameChannel do
   # end
 
   def join("game:" <> _player, %{"screen_name" => screen_name}, socket) do
-    send(self, {:after_join, screen_name})
-    {:ok, socket}
+    if authorized?(socket, screen_name) do
+      send(self, {:after_join, screen_name})
+      {:ok, socket}
+    else
+      {:error, %{reason: "Unauthorized"}}
+    end
   end
 
   def handle_info({:after_join, screen_name}, socket) do
@@ -131,4 +135,21 @@ defmodule IslandsInterfaceWeb.GameChannel do
   end
 
   defp via("game:" <> player), do: Game.via_tuple(player)
+
+  defp number_of_players(socket) do
+    socket
+    |> Presence.list()
+    |> Map.keys()
+    |> length()
+  end
+
+  defp existing_player?(socket, screen_name) do
+    socket
+    |> Presence.list()
+    |> Map.has_key?(screen_name)
+  end
+
+  defp authorized?(socket, screen_name) do
+    number_of_players(socket) < 2 && !existing_player?(socket, screen_name)
+  end
 end
