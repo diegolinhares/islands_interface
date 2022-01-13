@@ -10,6 +10,7 @@ defmodule IslandsInterfaceWeb.Endpoint do
     signing_salt: "u1RBc/eC"
   ]
 
+  socket "/socket", IslandsInterfaceWeb.UserSocket
   socket "/live", Phoenix.LiveView.Socket, websocket: [connect_info: [session: @session_options]]
 
   # Serve at "/" the static files from "priv/static" directory.
